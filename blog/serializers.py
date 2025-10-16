@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import password_validation
 
+
 class UserSerailizer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -43,12 +44,17 @@ class BlogSerializer(serializers.ModelSerializer):
             'id','title','content','image','author','category','category_name','created_at','updated_at',
             'is_published','publish_at','deleted_at', ]
         read_only_fields = ['author', 'created_at', 'updated_at', 'deleted_at', 'is_published']
+        
+        
     def create(self, validated_data):
         category_name = validated_data.pop('category_name')
         # Category ko fetch karo ya create karo
         category, _ = Category.objects.get_or_create(name=category_name)
         # Author set karo
-        author = self.context['request'].user
+        
+        author = validated_data.pop('author', None)
+        if not author and self.context.get('request'):
+            author = self.context['request'].user
         blog = Blog.objects.create(**validated_data, author=author, category=category)
         return blog
     
@@ -111,7 +117,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['is_admin'] = user.is_admin
         return token
  
-
+ 
     
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()

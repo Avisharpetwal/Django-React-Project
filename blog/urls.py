@@ -1,11 +1,11 @@
 from django.urls import path
-from .views import (
-    register,
+from .views import (register,
     MyTokenObtainPairView,
     logout,
     category_list_create,
     blog_list_create,
     blog_detail,
+    blog_detail_by_title,
     comment_list_create,
     password_reset_request,
     password_reset_confirm
@@ -31,6 +31,7 @@ urlpatterns = [
     # -------------------------
     path('blogs/', blog_list_create, name='blog-list-create'),
     path('blogs/<int:pk>/', blog_detail, name='blog-detail'),
+    path('blogs/title/<str:title>/', blog_detail_by_title, name='blog-detail-by-title'),
 
     # -------------------------
     # COMMENTS

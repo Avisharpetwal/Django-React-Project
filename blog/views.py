@@ -140,6 +140,33 @@ def blog_detail(request, pk):
             return Response({"detail": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
         blog.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def blog_detail_by_title(request, title):
+    try:
+        blog = Blog.objects.get(title=title)
+    except Blog.DoesNotExist:
+        return Response({"detail": "Blog not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = BlogSerializer(blog)
+        return Response(serializer.data)
+
+    if request.method == 'PUT':
+        if blog.author != request.user and not request.user.is_admin:
+            return Response({"detail": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
+        serializer = BlogSerializer(blog, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'DELETE':
+        if blog.author != request.user and not request.user.is_admin:
+            return Response({"detail": "Not authorized"}, status=status.HTTP_403_FORBIDDEN)
+        blog.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # COMMENT VIEWS
